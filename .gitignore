@@ -1,0 +1,9 @@
+*.hdf5
+*.h5
+pointsmap/
+__pycache__/
+dist/
+*.egg-info/
+build/
+test/
+.vscode/
