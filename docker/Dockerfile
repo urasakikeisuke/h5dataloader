@@ -25,4 +25,5 @@ RUN if [[ -f /opt/conda/bin/activate ]]; then \
     else \
         pip3 install scikit-build ninja h5py==2.10.0; \
     fi; \
-    pip3 install --trusted-host git-docker.tasakilab --extra-index-url http://git-docker.tasakilab:5500/simple h5dataloader
+    pip3 install git+https://github.com/shikishima-TasakiLab/pointsmap-python && \
+    pip3 install git+https://github.com/shikishima-TasakiLab/h5dataloader
