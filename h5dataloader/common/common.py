@@ -278,7 +278,7 @@ class HDF5DatasetNumpy(CreateFuncs):
         link_idx = self.get_link_idx(index=index)
         hdf5_key = self.get_key(index=index)
 
-        items:Dict[str, torch.Tensor] = {}
+        items:Dict[str, np.ndarray] = {}
         for key, minibatch_config in self.minibatch.items():
             dataType = minibatch_config[CONFIG_TAG_TYPE]
             items[key] = minibatch_config[CONFIG_TAG_CREATEFUNC](hdf5_key, link_idx, minibatch_config)
