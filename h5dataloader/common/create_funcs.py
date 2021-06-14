@@ -1714,10 +1714,12 @@ class CreateFuncs():
         h5_key:str = self.create_h5_key(TYPE_DISPARITY, key, link_idx, minibatch_config)
 
         depth = Depth()
-        depth.set_base_line(self.h5links[h5_key][H5_ATTR_BASELINE])
+        depth.set_base_line(self.h5links[h5_key].attrs[H5_ATTR_BASELINE])
+        tmp_config = minibatch_config.copy()
+        tmp_config[CONFIG_TAG_SHAPE] = list(self.h5links[h5_key].shape)
         depth.set_intrinsic(self.create_intrinsic_array(key, link_idx, minibatch_config))
         depth.set_depth_range(minibatch_config[CONFIG_TAG_RANGE])
-        depth.set_shape(minibatch_config[CONFIG_TAG_SHAPE])
+        depth.set_shape(self.h5links[h5_key].shape)
         depth.set_disparity(self.h5links[h5_key][()])
 
         return self.depth_common(depth.get_depthmap(), minibatch_config)
