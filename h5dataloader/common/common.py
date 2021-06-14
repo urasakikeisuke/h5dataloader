@@ -108,7 +108,7 @@ class HDF5DatasetNumpy(CreateFuncs):
         if os.path.isfile(config) is False:
             print('File not found : "%s"'%(config))
             exit(1)
-        
+
         self.block_size = block_size
         if self.block_size > 0:
             if isinstance(use_mods, tuple) is False:
@@ -128,7 +128,7 @@ class HDF5DatasetNumpy(CreateFuncs):
                 print('use_mod[0] < use_mods[1]')
                 exit(1)
             self.block_use_len = self.use_mods_end - self.use_mods_start
-            
+
         # configファイルをロード -> 辞書型へ
         config_dict:Dict[str, Dict[str, Dict[str, Any]]] = {}
         with open(config, mode='r') as configfile:
@@ -194,7 +194,7 @@ class HDF5DatasetNumpy(CreateFuncs):
                 data_dict[CONFIG_TAG_RANGE] = tuple(depth_range)
             else:
                 data_dict[CONFIG_TAG_RANGE] = DEFAULT_RANGE[data_dict[CONFIG_TAG_TYPE]]
-            
+
             data_dict[CONFIG_TAG_NORMALIZE] = item.get(CONFIG_TAG_NORMALIZE)
             data_dict[CONFIG_TAG_FRAMEID] = item.get(CONFIG_TAG_FRAMEID)
             data_dict[CONFIG_TAG_LABELTAG] = item.get(CONFIG_TAG_LABELTAG)
@@ -219,7 +219,7 @@ class HDF5DatasetNumpy(CreateFuncs):
                     tf_calc.append((tf_from_str, True))
                 for tf_to_str in tf_to_list:
                     tf_calc.append((tf_to_str, False))
-            
+
             data_dict[CONFIG_TAG_TF] = tf_calc
 
             data_dict[CONFIG_TAG_CREATEFUNC] = self.bind_createFunc(data_dict)
@@ -261,9 +261,30 @@ class HDF5DatasetNumpy(CreateFuncs):
 
     def keys(self):
         return self.minibatch.keys()
-    
+
     def items(self):
         return self.minibatch.items()
+
+    def __getitem__(self, index: int) -> dict:
+        """__getitem__
+
+        データセットからmini-batchを取得する
+
+        Args:
+            index (int): データの番号
+        Returns:
+            dict: mini-batch
+        """
+        link_idx = self.get_link_idx(index=index)
+        hdf5_key = self.get_key(index=index)
+
+        items:Dict[str, torch.Tensor] = {}
+        for key, minibatch_config in self.minibatch.items():
+            dataType = minibatch_config[CONFIG_TAG_TYPE]
+            items[key] = minibatch_config[CONFIG_TAG_CREATEFUNC](hdf5_key, link_idx, minibatch_config)
+
+        return items
+
 
     def __len__(self) -> int:
         """__len__
