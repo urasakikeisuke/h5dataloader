@@ -20,4 +20,4 @@ docker run \
     ${DOCKER_VOLUME} \
     ${DOCKER_ENV} \
     --name h5dataloader \
-    nvidia/pytorch:20.08-py3-h5
+    nvcr.io/nvidia/pytorch:20.08-py3-h5

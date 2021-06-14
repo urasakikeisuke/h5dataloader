@@ -7,7 +7,7 @@ import numpy as np
 import cv2
 import h5py
 
-from pointsmap import Points, VoxelGridMap, invertTransform, combineTransforms
+from pointsmap import Points, VoxelGridMap, invertTransform, combineTransforms, Depth
 from .structure import *
 
 NORMALIZE_INF = 2.0
@@ -49,7 +49,7 @@ class CreateFuncs():
         if config.get(CONFIG_TAG_FROM) is None:
             print('keys "from" must not be null')
             exit(1)
-        
+
         dst_type:str = config.get(CONFIG_TAG_TYPE)
         froms:Dict[str, str] = config.get(CONFIG_TAG_FROM)
 
@@ -115,6 +115,7 @@ class CreateFuncs():
             elif froms_keys <= {TYPE_VOXEL_SEMANTIC3D, TYPE_POSE, TYPE_INTRINSIC}: return self.create_rgba8_from_voxelsemantic3d
         elif dst_type == TYPE_DEPTH:
             if froms_keys <= {TYPE_DEPTH}: return self.create_depth_from_depth
+            elif froms_keys <= {TYPE_DISPARITY, TYPE_INTRINSIC}: return self.create_depth_from_disparity
             elif froms_keys <= {TYPE_POINTS, TYPE_INTRINSIC, TYPE_POSE}:
                 tmp_link:h5py.Group = self.h5links['0']
                 tmp_points:h5py.Dataset = tmp_link.get(froms[TYPE_POINTS])
@@ -287,7 +288,7 @@ class CreateFuncs():
             else:
                 print('length of "shape" must be 2 or 3.')
                 exit(1)
-        
+
         return dst
 
     def create_number(self, key:str, link_idx:int, minibatch_config:Dict[str, Union[str, Dict[str, str], List[int], bool, List[float], MethodType]]) -> np.dtype:
@@ -782,7 +783,7 @@ class CreateFuncs():
         dst:np.ndarray = self.convert_semantic2d_to_bgr8(tmp, label_tag)
 
         return self.image_common(dst, minibatch_config)
-    
+
     def create_bgr8_from_voxelsemantic3d(self, key:str, link_idx:int, minibatch_config:Dict[str, Union[str, Dict[str, str], List[int], bool, List[float], MethodType]]) -> np.ndarray:
         """create_bgr8_from_voxelsemantic3d
 
@@ -999,7 +1000,7 @@ class CreateFuncs():
         dst:np.ndarray = self.convert_semantic2d_to_rgb8(tmp, label_tag)
 
         return self.image_common(dst, minibatch_config)
-    
+
     def create_rgb8_from_voxelsemantic3d(self, key:str, link_idx:int, minibatch_config:Dict[str, Union[str, Dict[str, str], List[int], bool, List[float], MethodType]]) -> np.ndarray:
         """create_rgb8_from_voxelsemantic3d
 
@@ -1226,7 +1227,7 @@ class CreateFuncs():
         dst:np.ndarray = self.convert_semantic2d_to_bgra8(tmp, label_tag)
 
         return self.image_common(dst, minibatch_config)
-    
+
     def create_bgra8_from_voxelsemantic3d(self, key:str, link_idx:int, minibatch_config:Dict[str, Union[str, Dict[str, str], List[int], bool, List[float], MethodType]]) -> np.ndarray:
         """create_bgra8_from_voxelsemantic3d
 
@@ -1453,7 +1454,7 @@ class CreateFuncs():
         dst:np.ndarray = self.convert_semantic2d_to_rgba8(tmp, label_tag)
 
         return self.image_common(dst, minibatch_config)
-    
+
     def create_rgba8_from_voxelsemantic3d(self, key:str, link_idx:int, minibatch_config:Dict[str, Union[str, Dict[str, str], List[int], bool, List[float], MethodType]]) -> np.ndarray:
         """create_rgba8_from_voxelsemantic3d
 
@@ -1526,7 +1527,7 @@ class CreateFuncs():
             dst = self.convert_label(dst, minibatch_config[CONFIG_TAG_LABELTAG])
 
         return self.semantic2d_common(dst, minibatch_config)
-    
+
     def common_semantic2d_from_semantic3d(self, key:str, link_idx:int, minibatch_config:Dict[str, Union[str, Dict[str, str], List[int], bool, List[float], MethodType]]) -> np.ndarray:
         """common_semantic2d_from_semantic3d
 
@@ -1667,7 +1668,7 @@ class CreateFuncs():
         shape = minibatch_config[CONFIG_TAG_SHAPE]
         if shape != dst.shape[:2]:
             dst = cv2.resize(dst, dsize=(shape[1], shape[0]), interpolation=cv2.INTER_NEAREST)
-        
+
         return dst
 
     def create_depth_from_depth(self, key:str, link_idx:int, minibatch_config:Dict[str, Union[str, Dict[str, str], List[int], bool, List[float], MethodType]]) -> np.ndarray:
@@ -1691,6 +1692,35 @@ class CreateFuncs():
         dst:np.ndarray = self.h5links[h5_key][()]
 
         return self.depth_common(dst, minibatch_config)
+
+    def create_depth_from_disparity(self, key:str, link_idx:int, minibatch_config:Dict[str, Union[str, Dict[str, str], List[int], bool, List[float], MethodType]]) -> np.ndarray:
+        """create_depth_from_depth
+
+        Disparityから深度マップを生成する
+
+        Args:
+            key (str): HDF5DatasetNumpy.get_key() で生成されたキー
+            link_idx (int): linkの番号
+            minibatch_config (dict): mini-batchの設定
+
+        Returns:
+            np.ndarray: 深度マップ
+
+        Dependent Functions:
+            HDF5Dataset.create_h5_key(data_type, key, link_idx, minibatch_config)
+            HDF5Dataset.create_intrinsic_array(key, link_idx, minibatch_config)
+            HDF5Dataset.depth_common(src, minibatch_config)
+        """
+        h5_key:str = self.create_h5_key(TYPE_DISPARITY, key, link_idx, minibatch_config)
+
+        depth = Depth()
+        depth.set_base_line(self.h5links[h5_key][H5_ATTR_BASELINE])
+        depth.set_intrinsic(self.create_intrinsic_array(key, link_idx, minibatch_config))
+        depth.set_depth_range(minibatch_config[CONFIG_TAG_RANGE])
+        depth.set_shape(minibatch_config[CONFIG_TAG_SHAPE])
+        depth.set_disparity(self.h5links[h5_key][()])
+
+        return self.depth_common(depth.get_depthmap(), minibatch_config)
 
     def create_depth_from_points(self, key:str, link_idx:int, minibatch_config:Dict[str, Union[str, Dict[str, str], List[int], bool, List[float], MethodType]]) -> np.ndarray:
         """create_depth_from_points
@@ -1885,7 +1915,7 @@ class CreateFuncs():
                 trns, qtrn = invertTransform(translation=trns, quaternion=qtrn)
             translations.append(trns)
             quaternions.append(qtrn)
-        
+
         translation, quaternion = combineTransforms(translations=translations, quaternions=quaternions)
 
         return np.concatenate([translation, quaternion])
@@ -1933,7 +1963,7 @@ class CreateFuncs():
         h5_key:str = self.create_h5_key(TYPE_TRANSLATION, key, link_idx, minibatch_config)
 
         return self.h5links[h5_key][()]
-    
+
     def create_translation_from_pose(self, key:str, link_idx:int, minibatch_config:Dict[str, Union[str, Dict[str, str], List[int], bool, List[float], MethodType]]) -> np.ndarray:
         """create_translation_from_pose
 
@@ -1973,7 +2003,7 @@ class CreateFuncs():
         h5_key:str = self.create_h5_key(TYPE_QUATERNION, key, link_idx, minibatch_config)
 
         return self.h5links[h5_key][()]
-    
+
     def create_quaternion_from_pose(self, key:str, link_idx:int, minibatch_config:Dict[str, Union[str, Dict[str, str], List[int], bool, List[float], MethodType]]) -> np.ndarray:
         """create_quaternion_from_pose
 
@@ -2062,7 +2092,7 @@ class CreateFuncs():
 
     def convert_label(self, src:np.ndarray, label_tag:str) -> np.ndarray:
         """convert_label
-        
+
         ラベルの変換を行う
 
         Args:
@@ -2076,7 +2106,7 @@ class CreateFuncs():
         for label_convert_config in self.label_convert_configs[label_tag]:
             tmp = np.where(src == label_convert_config[CONFIG_TAG_SRC], label_convert_config[CONFIG_TAG_DST], tmp)
         return tmp
-    
+
     def convert_semantic2d_to_bgr8(self, src:np.ndarray, label_tag:str) -> np.ndarray:
         """convert_semantic2d_to_bgr8
 
