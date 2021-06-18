@@ -84,8 +84,6 @@ class HDF5DatasetNumpy(CreateFuncs):
         config (str): 設定ファイルのパス
         quiet (bool, optional): Trueの場合, 標準出力を行わない
     """
-    minibatch:Dict[str, Dict[str, Union[str, Dict[str, str], List[int], bool, List[float], MethodType]]] = {}     # mini-batchの設定
-    h5links:h5py.File
 
     def __init__(self, h5_paths:List[str]=[], config:str=None, quiet:bool=False,
         block_size:int=0, use_mods:Tuple[int, int]=None, visibility_filter_radius:int=0, visibility_filter_threshold:float=3.0) -> None:
@@ -173,6 +171,8 @@ class HDF5DatasetNumpy(CreateFuncs):
         self.tf = config_dict[CONFIG_TAG_TF]
 
         # データセットの設定
+        self.minibatch:Dict[str, Dict[str, Union[str, Dict[str, str], List[int], bool, List[float], MethodType]]] = {}     # mini-batchの設定
+
         for key, item in config_dict[CONFIG_TAG_MINIBATCH].items():
             data_dict:Dict[str, Dict[str, Any]] = {}
             data_dict[CONFIG_TAG_FROM] = item.get(CONFIG_TAG_FROM)
@@ -280,7 +280,6 @@ class HDF5DatasetNumpy(CreateFuncs):
 
         items:Dict[str, np.ndarray] = {}
         for key, minibatch_config in self.minibatch.items():
-            dataType = minibatch_config[CONFIG_TAG_TYPE]
             items[key] = minibatch_config[CONFIG_TAG_CREATEFUNC](hdf5_key, link_idx, minibatch_config)
 
         return items
