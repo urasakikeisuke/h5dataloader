@@ -1611,7 +1611,7 @@ class CreateFuncs():
         vgm.set_shape(minibatch_config[CONFIG_TAG_SHAPE])
         vgm.set_depth_range(minibatch_config[CONFIG_TAG_RANGE])
         vgm.set_empty_voxelgridmap(
-            self.h5links[voxelsemantic3d_key][()].shape, self.h5links[voxelsemantic3d_key].attrs[H5_ATTR_VOXELSIZE],
+            self.h5links[voxelsemantic3d_key].shape, self.h5links[voxelsemantic3d_key].attrs[H5_ATTR_VOXELSIZE],
             tuple(self.h5links[voxelsemantic3d_key].attrs[H5_ATTR_VOXELMIN]), tuple(self.h5links[voxelsemantic3d_key].attrs[H5_ATTR_VOXELMAX]),
             tuple(self.h5links[voxelsemantic3d_key].attrs[H5_ATTR_VOXELCENTER]), tuple(self.h5links[voxelsemantic3d_key].attrs[H5_ATTR_VOXELORIGIN].tolist())
         )
@@ -1836,7 +1836,7 @@ class CreateFuncs():
         vgm.set_shape(minibatch_config[CONFIG_TAG_SHAPE])
         vgm.set_depth_range(minibatch_config[CONFIG_TAG_RANGE])
         vgm.set_empty_voxelgridmap(
-            self.h5links[voxel_key][()].shape, self.h5links[voxel_key].attrs[H5_ATTR_VOXELSIZE],
+            self.h5links[voxel_key].shape, self.h5links[voxel_key].attrs[H5_ATTR_VOXELSIZE],
             tuple(self.h5links[voxel_key].attrs[H5_ATTR_VOXELMIN]), tuple(self.h5links[voxel_key].attrs[H5_ATTR_VOXELMAX]),
             tuple(self.h5links[voxel_key].attrs[H5_ATTR_VOXELCENTER]), tuple(self.h5links[voxel_key].attrs[H5_ATTR_VOXELORIGIN].tolist())
         )
