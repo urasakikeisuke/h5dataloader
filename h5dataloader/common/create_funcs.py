@@ -2140,7 +2140,7 @@ class CreateFuncs():
         """
         dst:np.ndarray = np.zeros((src.shape[0], src.shape[1], 3), np.uint8)
         for color_config in self.label_color_configs[label_tag]:
-            dst[np.where(src == int(color_config[CONFIG_TAG_LABEL]))] = np.flip(color_config[CONFIG_TAG_COLOR])
+            dst[np.where(src == int(color_config[CONFIG_TAG_LABEL]))] = color_config[CONFIG_TAG_COLOR][::-1]
         return dst
 
     def convert_semantic2d_to_bgra8(self, src:np.ndarray, label_tag:str) -> np.ndarray:
@@ -2174,5 +2174,5 @@ class CreateFuncs():
         """
         dst:np.ndarray = np.zeros((src.shape[0], src.shape[1], 4), np.uint8)
         for color_config in self.label_color_configs[label_tag]:
-            dst[np.where(src == int(color_config[CONFIG_TAG_LABEL]))] = np.append(np.flip(color_config[CONFIG_TAG_COLOR]), 255)
+            dst[np.where(src == int(color_config[CONFIG_TAG_LABEL]))] = np.append(color_config[CONFIG_TAG_COLOR][::-1], 255)
         return dst
