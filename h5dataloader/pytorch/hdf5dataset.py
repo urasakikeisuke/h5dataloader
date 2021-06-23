@@ -63,7 +63,7 @@ class HDF5Dataset(Dataset, HDF5DatasetNumpy):
         if tag not in self.minibatch.keys():
             raise KeyError(f'"{tag}" is not in "minibatch".')
         dataType:str = self.minibatch[tag]
-        return CONVERT_NUMPY[dataType](tensor)
+        return CONVERT_NUMPY[dataType](tensor.cpu().detach().numpy())
 
     def __len__(self) -> int:
         """__len__
