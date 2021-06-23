@@ -3,7 +3,8 @@
 from typing import Dict
 import numpy as np
 
-from h5dataloader.common.structure import *
+from ..common.common import *
+from ..common.structure import *
 
 DTYPE_TORCH:Dict[str, np.dtype] = {
     TYPE_FLOAT16: np.float32,
@@ -32,15 +33,6 @@ DTYPE_TORCH:Dict[str, np.dtype] = {
     TYPE_COLOR: np.float32,
 }
 
-def hwc2chw(hwc:np.ndarray) -> np.ndarray:
-    return np.transpose(hwc, [2, 0, 1])
-
-def hw2chw(hw:np.ndarray) -> np.ndarray:
-    return np.transpose(hw[:,:,np.newaxis], [2, 0, 1])
-
-def nochange(array:np.ndarray) -> np.ndarray:
-    return array
-
 CONVERT_TORCH:Dict[str, type] = {
     TYPE_FLOAT16: nochange,
     TYPE_FLOAT32: nochange,
@@ -57,6 +49,33 @@ CONVERT_TORCH:Dict[str, type] = {
     TYPE_BGRA8: hwc2chw,
     TYPE_RGBA8: hwc2chw,
     TYPE_DEPTH: hw2chw,
+    TYPE_POINTS: nochange,
+    TYPE_SEMANTIC1D: nochange,
+    TYPE_SEMANTIC2D: nochange,
+    TYPE_SEMANTIC3D: nochange,
+    TYPE_POSE: nochange,
+    TYPE_TRANSLATION: nochange,
+    TYPE_QUATERNION: nochange,
+    TYPE_INTRINSIC: nochange,
+    TYPE_COLOR: nochange,
+}
+
+CONVERT_NUMPY: Dict[str, type] = {
+    TYPE_FLOAT16: nochange,
+    TYPE_FLOAT32: nochange,
+    TYPE_FLOAT64: nochange,
+    TYPE_UINT8: nochange,
+    TYPE_INT8: nochange,
+    TYPE_INT16: nochange,
+    TYPE_INT32: nochange,
+    TYPE_INT64: nochange,
+    TYPE_MONO8: chw2hw,
+    TYPE_MONO16: chw2hw,
+    TYPE_BGR8: chw2hwc,
+    TYPE_RGB8: chw2hwc,
+    TYPE_BGRA8: chw2hwc,
+    TYPE_RGBA8: chw2hwc,
+    TYPE_DEPTH: chw2hw,
     TYPE_POINTS: nochange,
     TYPE_SEMANTIC1D: nochange,
     TYPE_SEMANTIC2D: nochange,

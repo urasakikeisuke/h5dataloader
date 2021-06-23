@@ -5,7 +5,7 @@ import torch
 from torch.utils.data import Dataset
 
 from ..common.structure import *
-from h5dataloader.pytorch.structure import CONVERT_TORCH, DTYPE_TORCH
+from h5dataloader.pytorch.structure import CONVERT_NUMPY, CONVERT_TORCH, DTYPE_TORCH
 from ..common import HDF5DatasetNumpy
 
 class HDF5Dataset(Dataset, HDF5DatasetNumpy):
@@ -25,7 +25,7 @@ class HDF5Dataset(Dataset, HDF5DatasetNumpy):
     def __init__(self, h5_paths:List[str]=[], config:str=None, quiet:bool=False, block_size:int=0, use_mods:Tuple[int, int]=None, visibility_filter_radius:int=0, visibility_filter_threshold:float=3.0) -> None:
         Dataset.__init__(self)
         HDF5DatasetNumpy.__init__(self, h5_paths, config, quiet, block_size, use_mods, visibility_filter_radius, visibility_filter_threshold)
-    
+
     def __getitem__(self, index:int) -> dict:
         """__getitem__
 
@@ -47,6 +47,23 @@ class HDF5Dataset(Dataset, HDF5DatasetNumpy):
             items[key] = torch.from_numpy(CONVERT_TORCH[dataType](tensor_np))
 
         return items
+
+    def to_numpy(self, tensor: torch.Tensor, tag: str) -> np.ndarray:
+        """to_numpy
+
+        Tensorをndarrayに変換する
+
+        Args:
+            tensor (torch.Tensor): (C, H, W)のテンソル
+            tag (str): minibatchのタグ
+
+        Returns:
+            np.ndarray: (H, W[,C])の行列
+        """
+        if tag not in self.minibatch.keys():
+            raise KeyError(f'"{tag}" is not in "minibatch".')
+        dataType:str = self.minibatch[tag]
+        return CONVERT_NUMPY[dataType](tensor)
 
     def __len__(self) -> int:
         """__len__

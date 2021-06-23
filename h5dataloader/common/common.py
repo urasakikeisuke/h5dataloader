@@ -294,3 +294,24 @@ class HDF5DatasetNumpy(CreateFuncs):
             int: データセットの長さ
         """
         return self.length
+
+def hwc2chw(hwc: np.ndarray) -> np.ndarray:
+    return hwc.transpose([2, 0, 1])
+
+def hw2chw(hw: np.ndarray) -> np.ndarray:
+    return hw[np.newaxis, :, :]
+
+def chw2hw(chw: np.ndarray) -> np.ndarray:
+    return chw.squeeze(axis=0)
+
+def chw2hwc(chw: np.ndarray) -> np.ndarray:
+    return chw.transpose([1, 2, 0])
+
+def nchw2nhwc(nchw: np.ndarray) -> np.ndarray:
+    return nchw.transpose([0, 2, 3, 1])
+
+def nchw2nhw(nchw: np.ndarray) -> np.ndarray:
+    return nchw.squeeze(axis=1)
+
+def nochange(array: Any) -> Any:
+    return array
