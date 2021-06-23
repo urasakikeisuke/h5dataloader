@@ -78,7 +78,7 @@ CONVERT_NUMPY: Dict[str, type] = {
     TYPE_DEPTH: chw2hw,
     TYPE_POINTS: nochange,
     TYPE_SEMANTIC1D: nochange,
-    TYPE_SEMANTIC2D: nochange,
+    TYPE_SEMANTIC2D: chw2hw,
     TYPE_SEMANTIC3D: nochange,
     TYPE_POSE: nochange,
     TYPE_TRANSLATION: nochange,
