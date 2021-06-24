@@ -35,7 +35,7 @@ def parse_src_dst(label_dict:Dict[str, Dict[str, int]], quiet:bool=False) -> Lis
         dst_list.append(src_dst)
     return dst_list
 
-def parse_colors(label_dict:Dict[str, Dict[str, Dict[str, List[int]]]]) -> List[Dict[str, Union[int, np.ndarray]]]:
+def parse_colors(label_dict:Dict[str, Dict[str, Dict[str, List[int]]]]) -> List[Dict[str, Union[str, int, np.ndarray]]]:
     """parse_colors
 
     ラベルをカラーへ変換する際の辞書を作成
