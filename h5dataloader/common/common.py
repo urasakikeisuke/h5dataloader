@@ -48,7 +48,8 @@ def parse_colors(label_dict:Dict[str, Dict[str, Dict[str, List[int]]]]) -> List[
     """
     dst_list:List[Dict[str, Union[int, np.ndarray]]] = []
     for key, item in label_dict[CONFIG_TAG_DST].items():
-        dst_color:Dict[str, Union[int, np.ndarray]] = {}
+        dst_color:Dict[str, Union[str, int, np.ndarray]] = {}
+        dst_color[CONFIG_TAG_TAG] = item[CONFIG_TAG_TAG]
         dst_color[CONFIG_TAG_LABEL] = int(key)
         dst_color[CONFIG_TAG_COLOR] = np.array(item[CONFIG_TAG_COLOR], dtype=np.uint8)
         dst_list.append(dst_color)
