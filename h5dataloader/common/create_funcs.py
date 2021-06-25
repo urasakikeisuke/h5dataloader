@@ -273,7 +273,7 @@ class CreateFuncs():
         dst_type:str = minibatch_config[CONFIG_TAG_TYPE]
 
         if minibatch_config[CONFIG_TAG_NORMALIZE] is True:
-            dst = (dst - dst_range[1]) / (dst_range[1] - dst_range[0])
+            dst = (dst - dst_range[0]) / (dst_range[1] - dst_range[0])
             dst = dst.astype(np.float32)
         elif dst_range != DEFAULT_RANGE[dst_type]:
             len_shape = len(dst.shape)
