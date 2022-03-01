@@ -7,7 +7,6 @@ import numpy as np
 import cv2
 import h5py
 
-from pointsmap import Points, VoxelGridMap, invertTransform, combineTransforms, Depth
 from .structure import *
 
 NORMALIZE_INF = 2.0
@@ -28,7 +27,7 @@ class CreateFuncs():
         self.label_convert_configs:Dict[str, List[Dict[str, int]]] = {}                     # ラベルの変換の設定を格納した辞書
         self.label_color_configs:Dict[str, List[Dict[str, Union[int, np.ndarray]]]] = {}    # ラベルの色の設定を格納した辞書
         self.link_maps:Dict[str, str] = {}                                                  # linkと地図を紐づけする辞書
-        self.maps:Dict[str, VoxelGridMap] = {}                                              # 地図とVoxelGridMapを紐づけする辞書
+        self.maps = {}                                              # 地図とVoxelGridMapを紐づけする辞書
         self.tf:Dict[str, dict] = {}                                                        # TFの設定を格納した辞書
         self.visibility_filter_radius = visibility_filter_radius                            # Visibility Filterにおけるカーネル半径
         self.visibility_filter_threshold = visibility_filter_threshold                      # Visibility Filterにおける閾値
@@ -139,6 +138,7 @@ class CreateFuncs():
                         self.link_maps[key_link] = map_id
                         if map_id in self.maps.keys(): continue
 
+                        from pointsmap import VoxelGridMap
                         vgm = VoxelGridMap(quiet=self.quiet)
                         intrinsic:np.ndarray = self.create_intrinsic_array(key_link, int(key_link), config)
                         vgm.set_intrinsic(intrinsic)
@@ -172,6 +172,7 @@ class CreateFuncs():
                         self.link_maps[key_link] = map_id
                         if map_id in self.maps.keys(): continue
 
+                        from pointsmap import VoxelGridMap
                         vgm = VoxelGridMap(quiet=self.quiet)
                         intrinsic:np.ndarray = self.create_intrinsic_array(key_link, int(key_link), config)
                         vgm.set_intrinsic(intrinsic)
@@ -1549,6 +1550,7 @@ class CreateFuncs():
         """
         semantic3d_key:str = self.create_h5_key(TYPE_SEMANTIC3D, key, link_idx, minibatch_config)
 
+        from pointsmap import Points
         pts = Points(quiet=self.quiet)
         pts.set_intrinsic(self.create_intrinsic_array(key, link_idx, minibatch_config))
         pts.set_shape(minibatch_config[CONFIG_TAG_SHAPE])
@@ -1606,6 +1608,7 @@ class CreateFuncs():
         """
         voxelsemantic3d_key:str = self.create_h5_key(TYPE_VOXEL_SEMANTIC3D, key, link_idx, minibatch_config)
 
+        from pointsmap import VoxelGridMap
         vgm = VoxelGridMap(quiet=self.quiet)
         vgm.set_intrinsic(self.create_intrinsic_array(key, link_idx, minibatch_config))
         vgm.set_shape(minibatch_config[CONFIG_TAG_SHAPE])
@@ -1713,6 +1716,7 @@ class CreateFuncs():
         """
         h5_key:str = self.create_h5_key(TYPE_DISPARITY, key, link_idx, minibatch_config)
 
+        from pointsmap import Depth
         depth = Depth()
         depth.set_base_line(self.h5links[h5_key].attrs[H5_ATTR_BASELINE])
         tmp_config = minibatch_config.copy()
@@ -1745,6 +1749,7 @@ class CreateFuncs():
         """
         points_key:str = self.create_h5_key(TYPE_POINTS, key, link_idx, minibatch_config)
 
+        from pointsmap import Points
         pts = Points(quiet=self.quiet)
         pts.set_intrinsic(self.create_intrinsic_array(key, link_idx, minibatch_config))
         pts.set_shape(minibatch_config[CONFIG_TAG_SHAPE])
@@ -1778,6 +1783,7 @@ class CreateFuncs():
         """
         semantic3d_key:str = self.create_h5_key(TYPE_SEMANTIC3D, key, link_idx, minibatch_config)
 
+        from pointsmap import Points
         pts = Points(quiet=True)
         pts.set_intrinsic(self.create_intrinsic_array(key, link_idx, minibatch_config))
         pts.set_shape(minibatch_config[CONFIG_TAG_SHAPE])
@@ -1831,6 +1837,7 @@ class CreateFuncs():
             HDF5Dataset.create_pose_from_pose(key, link_idx, minibatch_config)
             HDF5Dataset.depth_common(src, minibatch_config)
         """
+        from pointsmap import VoxelGridMap
         vgm = VoxelGridMap(quiet=self.quiet)
         vgm.set_intrinsic(self.create_intrinsic_array(key, link_idx, minibatch_config))
         vgm.set_shape(minibatch_config[CONFIG_TAG_SHAPE])
@@ -1914,10 +1921,12 @@ class CreateFuncs():
             trns:np.ndarray = self.h5links[h5_key][SUBTYPE_TRANSLATION][()]
             qtrn:np.ndarray = self.h5links[h5_key][SUBTYPE_ROTATION][()]
             if invert is True:
+                from pointsmap import invertTransform
                 trns, qtrn = invertTransform(translation=trns, quaternion=qtrn)
             translations.append(trns)
             quaternions.append(qtrn)
 
+        from pointsmap import combineTransforms
         translation, quaternion = combineTransforms(translations=translations, quaternions=quaternions)
 
         return np.concatenate([translation, quaternion])
