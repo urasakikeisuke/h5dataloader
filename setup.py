@@ -13,7 +13,7 @@ setup(
     license='',
     packages=find_packages(),
     install_requires=[
-        "scikit-build", "cmake", "ninja", "numpy", "h5py==2.10.0", "opencv-python-headless"
+        "scikit-build", "cmake", "ninja", "numpy", "h5py", "opencv-python-headless"
     ],
     python_requires='>=3.6'
 )
