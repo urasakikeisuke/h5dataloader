@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='h5dataloader',
-    version='1.0.0',
+    version='1.1.0',
     description='`https://github.com/shikishima-TasakiLab/h5dataloader`',
     long_description='`https://github.com/shikishima-TasakiLab/h5dataloader`',
     author='Junya Shikishima',
