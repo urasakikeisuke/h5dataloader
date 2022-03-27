@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import sys
 from types import MethodType
 import numpy as np
 from typing import Any, List, Dict
@@ -30,7 +31,7 @@ def parse_src_dst(label_dict:Dict[str, Dict[str, int]], quiet:bool=False) -> Lis
         src_dst:Dict[str, int] = {}
         src_dst[CONFIG_TAG_SRC] = int(key)
         src_dst[CONFIG_TAG_DST] = item
-        if quiet is False:
+        if not quiet:
             print('{0:>3d} > {1:>3d}'.format(int(key), item))
         dst_list.append(src_dst)
     return dst_list
@@ -105,26 +106,26 @@ class HDF5DatasetNumpy(CreateFuncs):
 
         # configファイルが見つからない場合に終了
         if os.path.isfile(config) is False:
-            print('File not found : "%s"'%(config))
+            print('File not found : "%s"'%(config), file=sys.stderr)
             exit(1)
 
         self.block_size = block_size
         if self.block_size > 0:
             if isinstance(use_mods, tuple) is False:
-                print('"use_mods" must be tuple (start, end).')
+                print('"use_mods" must be tuple (start, end).', file=sys.stderr)
                 exit(1)
             if isinstance(use_mods[0], int) is False:
-                print('"use_mods[0]" must be int.')
+                print('"use_mods[0]" must be int.', file=sys.stderr)
                 exit(1)
             if isinstance(use_mods[1], int) is False:
-                print('"use_mods[1]" must be int.')
+                print('"use_mods[1]" must be int.', file=sys.stderr)
                 exit(1)
             self.use_mods_start = use_mods[0]
             self.use_mods_end = use_mods[1]
             if self.block_size < self.use_mods_end:
                 self.use_mods_end = self.block_size
             if self.use_mods_end - self.use_mods_start <= 0:
-                print('use_mod[0] < use_mods[1]')
+                print('use_mod[0] < use_mods[1]', file=sys.stderr)
                 exit(1)
             self.block_use_len = self.use_mods_end - self.use_mods_start
 
@@ -136,7 +137,6 @@ class HDF5DatasetNumpy(CreateFuncs):
         # ラベルの設定の辞書を生成
         if CONFIG_TAG_LABEL in config_dict:
             for key_label, item_label in config_dict[CONFIG_TAG_LABEL][CONFIG_TAG_CONFIG].items():
-                print('Label "%s"'%(key_label))
                 self.label_convert_configs[key_label] = parse_src_dst(item_label, quiet=quiet)
                 self.label_color_configs[key_label] = parse_colors(item_label)
 
@@ -152,7 +152,7 @@ class HDF5DatasetNumpy(CreateFuncs):
             h5_len_tmp:int = 0
             for link_cnt, h5_path in enumerate(self.h5_paths):
                 if os.path.isfile(h5_path) is False:
-                    print('Not Found : "%s"', h5_path)
+                    print('Not Found : "%s"', h5_path, file=sys.stderr)
                     exit(1)
                 h5link[str(link_cnt)] = h5py.ExternalLink(h5_path, '/') # 番号からlinkを作成
                 start_idxs.append(h5_len_tmp)
@@ -180,7 +180,7 @@ class HDF5DatasetNumpy(CreateFuncs):
             data_dict[CONFIG_TAG_TYPE] = item.get(CONFIG_TAG_TYPE)
 
             if data_dict[CONFIG_TAG_FROM] is None or data_dict[CONFIG_TAG_TYPE] is None:
-                print('keys "from" and "type" must not be null')
+                print('keys "from" and "type" must not be null', file=sys.stderr)
                 exit(1)
 
             if isinstance(item.get(CONFIG_TAG_SHAPE), list) is True:
