@@ -43,11 +43,9 @@ class CreateFuncs():
             MethodType: create funcition
         """
         if config.get(CONFIG_TAG_TYPE) is None:
-            print('keys "type" must not be null')
-            exit(1)
+            raise ValueError('keys "type" must not be null')
         if config.get(CONFIG_TAG_FROM) is None:
-            print('keys "from" must not be null')
-            exit(1)
+            raise ValueError('keys "from" must not be null')
 
         dst_type:str = config.get(CONFIG_TAG_TYPE)
         froms:Dict[str, str] = config.get(CONFIG_TAG_FROM)
@@ -126,15 +124,12 @@ class CreateFuncs():
                     for key_link, item_link in self.h5links.items():
                         map_points:h5py.Dataset = item_link.get(froms[TYPE_POINTS])
                         if map_points is None:
-                            print('key "%s" is not exist'%(froms[TYPE_POINTS]))
-                            exit(1)
+                            raise KeyError('key "%s" is not exist'%(froms[TYPE_POINTS]))
                         elif isinstance(map_points, h5py.Dataset) is False:
-                            print('key "%s" is not "h5py.Dataset"'%(froms[TYPE_POINTS]))
-                            exit(1)
+                            raise KeyError('key "%s" is not "h5py.Dataset"'%(froms[TYPE_POINTS]))
                         map_id = self.convert_str(map_points.attrs.get(H5_ATTR_MAPID))
                         if map_id is None:
-                            print('attribute "map_id" is not exist')
-                            exit(1)
+                            raise KeyError('attribute "map_id" is not exist')
                         self.link_maps[key_link] = map_id
                         if map_id in self.maps.keys(): continue
 
@@ -160,15 +155,12 @@ class CreateFuncs():
                     for key_link, item_link in self.h5links.items():
                         map_points:h5py.Group = item_link.get(froms[TYPE_SEMANTIC3D])
                         if map_points is None:
-                            print('key "%s" is not exist'%(froms[TYPE_SEMANTIC3D]))
-                            exit(1)
+                            raise KeyError('key "%s" is not exist'%(froms[TYPE_SEMANTIC3D]))
                         elif isinstance(map_points, h5py.Group) is False:
-                            print('key "%s" is not "h5py.Group"'%(froms[TYPE_SEMANTIC3D]))
-                            exit(1)
+                            raise KeyError('key "%s" is not "h5py.Group"'%(froms[TYPE_SEMANTIC3D]))
                         map_id = self.convert_str(map_points.attrs.get(H5_ATTR_MAPID))
                         if map_id is None:
-                            print('attribute "map_id" is not exist')
-                            exit(1)
+                            raise KeyError('attribute "map_id" is not exist')
                         self.link_maps[key_link] = map_id
                         if map_id in self.maps.keys(): continue
 
@@ -268,8 +260,7 @@ class CreateFuncs():
 
         dst_range = minibatch_config.get(CONFIG_TAG_RANGE)
         if dst_range is None:
-            print('"range" is not defined.')
-            exit(1)
+            raise ValueError('"range" is not defined.')
 
         dst_type:str = minibatch_config[CONFIG_TAG_TYPE]
 
@@ -287,8 +278,7 @@ class CreateFuncs():
             elif len_shape == 2:
                 dst = np.where((dst < dst_range[0]) | (dst_range[1] < dst), ZERO_VALUE[dst_type], dst)
             else:
-                print('length of "shape" must be 2 or 3.')
-                exit(1)
+                raise ValueError('length of "shape" must be 2 or 3.')
 
         return dst
 
@@ -309,8 +299,7 @@ class CreateFuncs():
 
         dst_range = minibatch_config.get(CONFIG_TAG_RANGE)
         if dst_range is None:
-            print('"range" is not defined.')
-            exit(1)
+            raise ValueError('"range" is not defined.')
 
         if minibatch_config[CONFIG_TAG_NORMALIZE] is True:
             dst = np.float32((dst - dst_range[1]) / (dst_range[1] - dst_range[0]))
@@ -748,8 +737,7 @@ class CreateFuncs():
         label_tag:str = minibatch_config[CONFIG_TAG_LABELTAG]
 
         if label_tag not in self.label_convert_configs.keys():
-            print(f'"{label_tag}" is not in "/label"')
-            exit(1)
+            raise KeyError(f'"{label_tag}" is not in "/label"')
 
         tmp:np.ndarray = self.convert_label(src, minibatch_config[CONFIG_TAG_LABELTAG])
         dst:np.ndarray = self.convert_semantic2d_to_bgr8(tmp, label_tag)
@@ -777,8 +765,7 @@ class CreateFuncs():
         label_tag:str = minibatch_config[CONFIG_TAG_LABELTAG]
 
         if label_tag not in self.label_convert_configs.keys():
-            print(f'"{label_tag}" is not in "/label"')
-            exit(1)
+            raise KeyError(f'"{label_tag}" is not in "/label"')
 
         tmp:np.ndarray = self.common_semantic2d_from_semantic3d(key, link_idx, minibatch_config)
         dst:np.ndarray = self.convert_semantic2d_to_bgr8(tmp, label_tag)
@@ -806,8 +793,7 @@ class CreateFuncs():
         label_tag:str = minibatch_config[CONFIG_TAG_LABELTAG]
 
         if label_tag not in self.label_convert_configs.keys():
-            print(f'"{label_tag}" is not in "/label"')
-            exit(1)
+            raise KeyError(f'"{label_tag}" is not in "/label"')
 
         tmp:np.ndarray = self.common_semantic2d_from_voxelsemantic3d(key, link_idx, minibatch_config)
         dst:np.ndarray = self.convert_semantic2d_to_bgr8(tmp, label_tag)
@@ -965,8 +951,7 @@ class CreateFuncs():
         label_tag:str = minibatch_config[CONFIG_TAG_LABELTAG]
 
         if label_tag not in self.label_convert_configs.keys():
-            print(f'"{label_tag}" is not in "/label"')
-            exit(1)
+            raise KeyError(f'"{label_tag}" is not in "/label"')
 
         tmp:np.ndarray = self.convert_label(src, minibatch_config[CONFIG_TAG_LABELTAG])
         dst:np.ndarray = self.convert_semantic2d_to_rgb8(tmp, label_tag)
@@ -994,8 +979,7 @@ class CreateFuncs():
         label_tag:str = minibatch_config[CONFIG_TAG_LABELTAG]
 
         if label_tag not in self.label_convert_configs.keys():
-            print(f'"{label_tag}" is not in "/label"')
-            exit(1)
+            raise KeyError(f'"{label_tag}" is not in "/label"')
 
         tmp:np.ndarray = self.common_semantic2d_from_semantic3d(key, link_idx, minibatch_config)
         dst:np.ndarray = self.convert_semantic2d_to_rgb8(tmp, label_tag)
@@ -1023,8 +1007,7 @@ class CreateFuncs():
         label_tag:str = minibatch_config[CONFIG_TAG_LABELTAG]
 
         if label_tag not in self.label_convert_configs.keys():
-            print(f'"{label_tag}" is not in "/label"')
-            exit(1)
+            raise KeyError(f'"{label_tag}" is not in "/label"')
 
         tmp:np.ndarray = self.common_semantic2d_from_voxelsemantic3d(key, link_idx, minibatch_config)
         dst:np.ndarray = self.convert_semantic2d_to_rgb8(tmp, label_tag)
@@ -1192,8 +1175,7 @@ class CreateFuncs():
         label_tag:str = minibatch_config[CONFIG_TAG_LABELTAG]
 
         if label_tag not in self.label_convert_configs.keys():
-            print(f'"{label_tag}" is not in "/label"')
-            exit(1)
+            raise KeyError(f'"{label_tag}" is not in "/label"')
 
         tmp:np.ndarray = self.convert_label(src, minibatch_config[CONFIG_TAG_LABELTAG])
         dst:np.ndarray = self.convert_semantic2d_to_bgra8(tmp, label_tag)
@@ -1221,8 +1203,7 @@ class CreateFuncs():
         label_tag:str = minibatch_config[CONFIG_TAG_LABELTAG]
 
         if label_tag not in self.label_convert_configs.keys():
-            print(f'"{label_tag}" is not in "/label"')
-            exit(1)
+            raise KeyError(f'"{label_tag}" is not in "/label"')
 
         tmp:np.ndarray = self.common_semantic2d_from_semantic3d(key, link_idx, minibatch_config)
         dst:np.ndarray = self.convert_semantic2d_to_bgra8(tmp, label_tag)
@@ -1250,8 +1231,7 @@ class CreateFuncs():
         label_tag:str = minibatch_config[CONFIG_TAG_LABELTAG]
 
         if label_tag not in self.label_convert_configs.keys():
-            print(f'"{label_tag}" is not in "/label"')
-            exit(1)
+            raise KeyError(f'"{label_tag}" is not in "/label"')
 
         tmp:np.ndarray = self.common_semantic2d_from_voxelsemantic3d(key, link_idx, minibatch_config)
         dst:np.ndarray = self.convert_semantic2d_to_bgra8(tmp, label_tag)
@@ -1419,8 +1399,7 @@ class CreateFuncs():
         label_tag:str = minibatch_config[CONFIG_TAG_LABELTAG]
 
         if label_tag not in self.label_convert_configs.keys():
-            print(f'"{label_tag}" is not in "/label"')
-            exit(1)
+            raise KeyError(f'"{label_tag}" is not in "/label"')
 
         tmp:np.ndarray = self.convert_label(src, label_tag)
         dst:np.ndarray = self.convert_semantic2d_to_rgba8(tmp, label_tag)
@@ -1448,8 +1427,7 @@ class CreateFuncs():
         label_tag:str = minibatch_config[CONFIG_TAG_LABELTAG]
 
         if label_tag not in self.label_convert_configs.keys():
-            print(f'"{label_tag}" is not in "/label"')
-            exit(1)
+            raise KeyError(f'"{label_tag}" is not in "/label"')
 
         tmp:np.ndarray = self.common_semantic2d_from_semantic3d(key, link_idx, minibatch_config)
         dst:np.ndarray = self.convert_semantic2d_to_rgba8(tmp, label_tag)
@@ -1477,8 +1455,7 @@ class CreateFuncs():
         label_tag:str = minibatch_config[CONFIG_TAG_LABELTAG]
 
         if label_tag not in self.label_convert_configs.keys():
-            print(f'"{label_tag}" is not in "/label"')
-            exit(1)
+            raise KeyError(f'"{label_tag}" is not in "/label"')
 
         tmp:np.ndarray = self.common_semantic2d_from_voxelsemantic3d(key, link_idx, minibatch_config)
         dst:np.ndarray = self.convert_semantic2d_to_rgba8(tmp, label_tag)

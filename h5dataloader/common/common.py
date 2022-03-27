@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
-import sys
-from types import MethodType
-import numpy as np
-from typing import Any, List, Dict
-import h5py
 import json
 import os
 import uuid
+from types import MethodType
+from typing import Any, Dict, List
+
+import h5py
+import numpy as np
 
 from .create_funcs import CreateFuncs
 from .structure import *
@@ -105,28 +105,23 @@ class HDF5DatasetNumpy(CreateFuncs):
         super(HDF5DatasetNumpy, self).__init__(quiet=quiet, visibility_filter_radius=visibility_filter_radius, visibility_filter_threshold=visibility_filter_threshold)
 
         # configファイルが見つからない場合に終了
-        if os.path.isfile(config) is False:
-            print('File not found : "%s"'%(config), file=sys.stderr)
-            exit(1)
+        if not os.path.isfile(config):
+            raise FileNotFoundError(f"DL config file not found at {config}")
 
         self.block_size = block_size
         if self.block_size > 0:
-            if isinstance(use_mods, tuple) is False:
-                print('"use_mods" must be tuple (start, end).', file=sys.stderr)
-                exit(1)
-            if isinstance(use_mods[0], int) is False:
-                print('"use_mods[0]" must be int.', file=sys.stderr)
-                exit(1)
-            if isinstance(use_mods[1], int) is False:
-                print('"use_mods[1]" must be int.', file=sys.stderr)
-                exit(1)
+            if not isinstance(use_mods, tuple):
+                raise ValueError("`use_mods` must be tuple (start, end).")
+            if not isinstance(use_mods[0], int):
+                raise ValueError("`use_mods[0]` must be int.")
+            if not isinstance(use_mods[1], int):
+                raise ValueError("`use_mods[1]` must be int.")
             self.use_mods_start = use_mods[0]
             self.use_mods_end = use_mods[1]
             if self.block_size < self.use_mods_end:
                 self.use_mods_end = self.block_size
             if self.use_mods_end - self.use_mods_start <= 0:
-                print('use_mod[0] < use_mods[1]', file=sys.stderr)
-                exit(1)
+                raise ValueError("use_mod[0] < use_mods[1]")
             self.block_use_len = self.use_mods_end - self.use_mods_start
 
         # configファイルをロード -> 辞書型へ
@@ -152,8 +147,7 @@ class HDF5DatasetNumpy(CreateFuncs):
             h5_len_tmp:int = 0
             for link_cnt, h5_path in enumerate(self.h5_paths):
                 if os.path.isfile(h5_path) is False:
-                    print('Not Found : "%s"', h5_path, file=sys.stderr)
-                    exit(1)
+                    raise FileNotFoundError(f"H5 file not found at {h5_path}")
                 h5link[str(link_cnt)] = h5py.ExternalLink(h5_path, '/') # 番号からlinkを作成
                 start_idxs.append(h5_len_tmp)
                 with h5py.File(h5_path, mode='r') as h5file:
@@ -180,8 +174,7 @@ class HDF5DatasetNumpy(CreateFuncs):
             data_dict[CONFIG_TAG_TYPE] = item.get(CONFIG_TAG_TYPE)
 
             if data_dict[CONFIG_TAG_FROM] is None or data_dict[CONFIG_TAG_TYPE] is None:
-                print('keys "from" and "type" must not be null', file=sys.stderr)
-                exit(1)
+                raise ValueError("'keys `from` and `type` must not be null")
 
             if isinstance(item.get(CONFIG_TAG_SHAPE), list) is True:
                 data_dict[CONFIG_TAG_SHAPE] = tuple(item[CONFIG_TAG_SHAPE])
